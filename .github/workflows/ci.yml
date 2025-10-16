@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout student repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Checkout hidden tests (provaac/solver_ex1)
+        uses: actions/checkout@v4
+        with:
+          repository: provaac/solver_ex1       # ← repo de tests de la captura
+          ref: main                            # canvia-ho si la branca no és main
+          path: .hidden-tests
+          token: ${{ secrets.CLASSROOM_PAT }}  # secret d'org amb permís de lectura
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f .hidden-tests/requirements.txt ]; then pip install -r .hidden-tests/requirements.txt; fi
+          pip install pytest
+
+      - name: Run hidden tests
+        run: pytest -q .hidden-tests/solver_ex1/tests/test_hidden.py

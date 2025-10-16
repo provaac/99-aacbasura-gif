@@ -1,0 +1,33 @@
+name: GitHub Classroom Autograder
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/checkout@v4
+        with:
+          repository: provaac/solver_ex1
+          ref: main
+          path: .hidden-tests
+          token: ${{ secrets.CLASSROOM_PAT }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          
+      - uses: education/autograding@v1
